@@ -1,0 +1,1169 @@
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Route One Consultancy — Client Intake Form</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&amp;display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #111;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .hdr {
+    background: #0F383C;
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .hdr-name { font-size: 16px; font-weight: 500; letter-spacing: 0.04em; color: #fff; }
+  .hdr-sub { font-size: 10px; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-top: 3px; }
+  .hdr-tag { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); padding: 7px 16px; }
+
+  /* HERO */
+  .hero { padding: 56px 48px 48px; border-bottom: 1px solid #e8e8e8; }
+  .eyebrow { font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: #0F383C; margin-bottom: 14px; }
+  .hero h1 { font-size: 32px; font-weight: 500; color: #111; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .hero p { font-size: 13px; font-weight: 300; color: #555; line-height: 1.85; max-width: 540px; }
+
+  /* BODY */
+  .body { padding: 0 48px 96px; max-width: 960px; }
+
+  .section { padding-top: 56px; }
+
+  .sec-head { display: flex; align-items: baseline; gap: 16px; padding-bottom: 16px; margin-bottom: 32px; border-bottom: 2px solid #111; }
+  .sec-n { font-size: 10px; font-weight: 400; color: #777; letter-spacing: 0.12em; }
+  .sec-t { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #111; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .span { grid-column: 1 / -1; }
+
+  .field { display: flex; flex-direction: column; gap: 8px; }
+
+  .label { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #666; }
+  .req { color: #0F383C; }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  textarea {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    color: #111;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 13px 16px;
+    outline: none;
+    width: 100%;
+    border-radius: 0;
+    transition: border-color 0.18s, background 0.18s;
+    -webkit-appearance: none;
+  }
+  input::placeholder, textarea::placeholder { color: #999; font-weight: 300; }
+  input:focus, textarea:focus, select:focus { border-color: #0F383C; background: #fff; outline: none; }
+
+  select {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    color: #777;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 13px 44px 13px 16px;
+    outline: none;
+    width: 100%;
+    border-radius: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+  }
+  select.picked { color: #111; }
+  select option { color: #111; background: #fff; }
+  select optgroup { color: #666; }
+
+  textarea { resize: vertical; min-height: 96px; line-height: 1.65; }
+
+  .pfx-wrap { position: relative; }
+  .pfx { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 13px; color: #999; pointer-events: none; font-family: 'DM Sans', sans-serif; }
+  .pfx-in { padding-left: 68px !important; }
+
+  /* PILLS */
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .pill { position: relative; }
+  .pill input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .pill label { display: block; cursor: pointer; font-size: 12px; font-weight: 400; letter-spacing: 0.04em; color: #666; border: 1px solid #e0e0e0; padding: 9px 18px; transition: all 0.15s; user-select: none; }
+  .pill input:checked + label { color: #111; border-color: #111; background: #f4f4f4; }
+  .pill label:hover { border-color: #777; color: #555; }
+
+  /* CHECKBOXES */
+  .checks { display: grid; gap: 12px; margin-top: 6px; }
+  .chk { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .chk input[type="checkbox"] { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; flex-shrink: 0; border: 1px solid #ddd; background: #fafafa; cursor: pointer; position: relative; transition: all 0.15s; border-radius: 0; }
+  .chk input:checked { background: #111; border-color: #111; }
+  .chk input:checked::after { content: ''; position: absolute; left: 4px; top: 2px; width: 5px; height: 9px; border: 1.5px solid #fff; border-top: none; border-left: none; transform: rotate(45deg); }
+  .chk-txt { font-size: 13px; font-weight: 400; color: #555; }
+  .chk:hover .chk-txt { color: #111; }
+
+  /* CONTACT CARD */
+  .card { border: 1px solid #e8e8e8; background: #fafafa; padding: 26px; margin-bottom: 14px; }
+  .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .card-tag { font-size: 10px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #777; }
+  .card-rm { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #999; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: color 0.15s; }
+  .card-rm:hover { color: #111; }
+
+  .add-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #555; background: transparent; border: 1px solid #ddd; padding: 12px 24px; cursor: pointer; transition: all 0.18s; margin-top: 6px; border-radius: 0; }
+  .add-btn:hover { border-color: #111; color: #111; }
+
+  .note { font-size: 11px; font-weight: 300; color: #777; margin-top: 10px; line-height: 1.7; }
+
+  /* FOOTER */
+  .footer { margin-top: 64px; padding-top: 36px; border-top: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+  .fine { font-size: 11px; font-weight: 300; color: #777; max-width: 420px; line-height: 1.75; }
+  .submit-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; background: #0F383C; border: none; padding: 17px 52px; cursor: pointer; flex-shrink: 0; transition: background 0.18s; border-radius: 0; }
+  .submit-btn:hover { background: #1a5257; }
+  .submit-btn:active { background: #0a292c; }
+
+  /* SUCCESS */
+  .success { display: none; margin-top: 32px; border: 1px solid #e8e8e8; background: #fafafa; padding: 56px; text-align: center; }
+  .success.on { display: block; }
+  .ok-icon { width: 44px; height: 44px; border: 1.5px solid #111; margin: 0 auto 22px; display: flex; align-items: center; justify-content: center; }
+  .ok-icon svg { width: 18px; height: 18px; stroke: #111; fill: none; stroke-width: 2; }
+  .success h3 { font-size: 20px; font-weight: 500; color: #111; margin-bottom: 10px; }
+  .success p { font-size: 13px; font-weight: 300; color: #555; }
+
+  /* UPLOAD */
+  .upload-box {
+    border: 1.5px dashed #ddd;
+    background: #fafafa;
+    padding: 20px 16px 16px;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+    position: relative;
+  }
+  .upload-box:hover { border-color: #0F383C; background: #f5f9f8; }
+  .upload-box input[type="file"] { display: none; }
+  .upload-inner { display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
+  .upload-icon { width: 28px; height: 28px; color: #999; }
+  .upload-icon svg { width: 100%; height: 100%; }
+  .upload-text { font-size: 12px; font-weight: 400; color: #666; }
+  .upload-hint { font-size: 10px; color: #999; }
+  .upload-files { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .upload-file-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 1px solid #e8e8e8;
+    padding: 6px 10px; font-size: 11px; color: #555;
+  }
+  .upload-file-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; }
+  .upload-file-rm { font-size: 10px; color: #999; cursor: pointer; background: none; border: none; padding: 0; margin-left: 8px; flex-shrink: 0; }
+  .upload-file-rm:hover { color: #111; }
+  .upload-box.has-files .upload-inner { display: none; }
+
+  @media (max-width: 700px) {
+    .hdr, .hero, .body { padding-left: 20px; padding-right: 20px; }
+    .grid { grid-template-columns: 1fr; }
+    .span { grid-column: 1; }
+    .footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 44" height="38" style="display:block">
+  <!-- Back chevron (sage) -->
+  <path d="M4,8 L18,8 L34,22 L18,36 L4,36 L20,22 Z" fill="#8aada6"></path>
+  <!-- Front chevron (white) -->
+  <path d="M16,8 L30,8 L46,22 L30,36 L16,36 L32,22 Z" fill="white"></path>
+  <!-- Wordmark -->
+  <text x="56" y="30" font-family="DM Sans,sans-serif" font-size="20" font-weight="500" fill="white" letter-spacing="0.2">Route One</text>
+</svg>
+  <div class="hdr-tag">Client Intake</div>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">New Client Onboarding</div>
+  <h1>Client Information Form</h1>
+  <p>Complete all sections below. This enables Route One to set up your account accurately and ensure a smooth kickoff. Required fields are marked with an asterisk — <strong>please skip any fields that are not applicable to your business.</strong></p>
+</div>
+
+<div class="body">
+<form id="frm">
+
+  <!-- 01 COMPANY IDENTITY -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">01</span><span class="sec-t">Company Identity</span></div>
+    <div class="grid">
+      <div class="field span">
+        <label class="label">Legal Company Name <span class="req">*</span></label>
+        <input type="text" placeholder="Full registered legal name" required="" data-sharkid="__0">
+      </div>
+      <div class="field">
+        <label class="label">DBA / Trading Name</label>
+        <input type="text" placeholder="If different from legal name" data-sharkid="__1">
+      </div>
+      <div class="field">
+        <label class="label">Website</label>
+        <div class="pfx-wrap">
+          <span class="pfx">https://</span>
+          <input type="text" class="pfx-in" placeholder="yourcompany.com" data-sharkid="__2">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Entity / Corporation Type <span class="req">*</span></label>
+        <select required="" onchange="this.classList.add('picked')" data-sharkid="__3">
+          <option value="" disabled="" selected="">Select entity type</option>
+          <optgroup label="US Entities">
+            <option>LLC</option><option>S-Corp</option><option>C-Corp</option>
+            <option>Sole Proprietorship</option><option>Partnership</option><option>Non-Profit (501c3)</option>
+          </optgroup>
+          <optgroup label="UK Entities">
+            <option>Limited Company (Ltd)</option><option>LLP</option><option>PLC</option><option>Sole Trader</option>
+          </optgroup>
+          <option>Other / International</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Date of Incorporation <span class="req">*</span></label>
+        <input type="date" required="" data-sharkid="__4">
+      </div>
+      <div class="field">
+        <label class="label">Primary Jurisdiction <span class="req">*</span></label>
+        <select required="" onchange="this.classList.add('picked')" data-sharkid="__5">
+          <option value="" disabled="" selected="">Select jurisdiction</option>
+          <option>United States</option><option>United Kingdom</option><option>European Union</option>
+          <option>UAE / Middle East</option><option>Southeast Asia</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field span">
+        <label class="label">Registered Business Address <span class="req">*</span></label>
+        <input type="text" placeholder="Street, city, state/region, postal code, country" required="" data-sharkid="__6" data-sharklabel="postalCode">
+      </div>
+      <div class="field">
+        <label class="label">FEIN / Company Registration No. <span class="req">*</span></label>
+        <input type="text" placeholder="e.g. 12-3456789" required="" data-sharkid="__7">
+      </div>
+      <div class="field">
+        <label class="label">VAT / Sales Tax Registration No.</label>
+        <input type="text" placeholder="If applicable" data-sharkid="__8">
+      </div>
+      <div class="field">
+        <label class="label">Fiscal Year End <span class="req">*</span></label>
+        <select required="" onchange="this.classList.add('picked')" data-sharkid="__9" data-sharklabel="dobMonth">
+          <option value="" disabled="" selected="">Select month</option>
+          <option>December (12/31)</option><option>March (3/31)</option>
+          <option>June (6/30)</option><option>September (9/30)</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Timezone <span class="req">*</span></label>
+        <select required="" onchange="this.classList.add('picked')" data-sharkid="__10">
+          <option value="" disabled="" selected="">Select timezone</option>
+          <option>EST (UTC-5)</option><option>CST (UTC-6)</option><option>MST (UTC-7)</option>
+          <option>PST (UTC-8)</option><option>GMT (UTC+0)</option><option>CET (UTC+1)</option>
+          <option>GST (UTC+4)</option><option>SGT (UTC+8)</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 BUSINESS OVERVIEW -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">02</span><span class="sec-t">Business Overview</span></div>
+    <div class="grid">
+      <div class="field span">
+        <label class="label">Nature of Business &amp; Revenue Model <span class="req">*</span></label>
+        <textarea placeholder="What does your company do, and how does it generate revenue?" required="" data-sharkid="__11"></textarea>
+      </div>
+      <div class="field">
+        <label class="label">Industry / Sector <span class="req">*</span></label>
+        <select required="" onchange="this.classList.add('picked')" data-sharkid="__12">
+          <option value="" disabled="" selected="">Select industry</option>
+          <option>Technology / SaaS</option><option>E-Commerce / Retail</option>
+          <option>Financial Services</option><option>Professional Services</option>
+          <option>Healthcare</option><option>Real Estate</option><option>Hospitality / F&amp;B</option>
+          <option>Media / Creative</option><option>Manufacturing</option>
+          <option>Logistics / Supply Chain</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Annual Revenue Range</label>
+        <select onchange="this.classList.add('picked')" data-sharkid="__13">
+          <option value="" disabled="" selected="">Select range</option>
+          <option>Pre-revenue / Startup</option><option>Under $250K</option>
+          <option>$250K – $1M</option><option>$1M – $5M</option><option>$5M – $20M</option><option>$20M+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Number of Employees</label>
+        <select onchange="this.classList.add('picked')" data-sharkid="__14">
+          <option value="" disabled="" selected="">Select range</option>
+          <option>Solo / 1</option><option>2 – 10</option><option>11 – 50</option>
+          <option>51 – 200</option><option>200+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Operating Countries</label>
+        <input type="text" placeholder="e.g. US, UK, Thailand" data-sharkid="__15">
+      </div>
+      <div class="field">
+        <label class="label">Organisation Structure</label>
+        <input type="text" placeholder="e.g. Parent company, subsidiaries, group entities" data-sharkid="__16">
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 KEY CONTACTS -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">03</span><span class="sec-t">Key Contacts</span></div>
+    <div id="cWrap">
+      <div class="card">
+        <div class="card-head"><span class="card-tag">Primary Contact</span></div>
+        <div class="grid">
+          <div class="field"><label class="label">Full Name <span class="req">*</span></label><input type="text" placeholder="First Last" required="" data-sharkid="__17" data-sharklabel="name"></div>
+          <div class="field"><label class="label">Title / Role <span class="req">*</span></label><input type="text" placeholder="e.g. CEO, CFO, Controller" required="" data-sharkid="__18"></div>
+          <div class="field"><label class="label">Email <span class="req">*</span></label><input type="email" placeholder="name@company.com" required="" data-sharkid="__19" data-sharklabel="email"><shark-icon-container data-sharkidcontainer="__19" style="position: absolute;"><template shadowrootmode="open"><surfhark-icon data-sharkidicon="__19" style="background-image: url(&quot;chrome-extension://ailoabdmgclmfmhdagmlohpjlbpffblp/autofill-action-light.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: cover; position: absolute; right: 0px; visibility: visible; display: block; z-index: 1; border: none; cursor: pointer; padding: 0px; transition: none; pointer-events: all; opacity: 1; left: 249.4px; top: 34.4px; width: 18px; height: 18px; min-width: 18px; min-height: 18px;"></surfhark-icon></template></shark-icon-container></div>
+          <div class="field"><label class="label">Phone / WhatsApp</label><input type="tel" placeholder="+1 (555) 000-0000" data-sharkid="__20"></div>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="add-btn" id="addC">+ Add Contact</button>
+    <p class="note">Add AP/AR contacts, bookkeeping email addresses, and any additional finance stakeholders.</p>
+  </div>
+
+  <!-- 04 ACCESS & CREDENTIALS -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">04</span><span class="sec-t">Access &amp; Credentials</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Accounting Software <span class="req">*</span></label>
+        <select required="" onchange="this.classList.add('picked')" data-sharkid="__21">
+          <option value="" disabled="" selected="">Select platform</option>
+          <option>QuickBooks Online</option><option>QuickBooks Desktop</option><option>Xero</option>
+          <option>Sage</option><option>NetSuite</option><option>Wave</option>
+          <option>FreshBooks</option><option>None / Setting Up</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Payroll Provider</label>
+        <select onchange="this.classList.add('picked')" data-sharkid="__22">
+          <option value="" disabled="" selected="">Select or N/A</option>
+          <option>ADP</option><option>Paychex</option><option>Gusto</option><option>Rippling</option>
+          <option>Deel</option><option>Remote</option><option>N/A — No payroll</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Cloud Storage Platform</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="stor" id="st1" data-sharkid="__23"><label for="st1">Google Drive</label></div>
+          <div class="pill"><input type="radio" name="stor" id="st2" data-sharkid="__24"><label for="st2">Dropbox</label></div>
+          <div class="pill"><input type="radio" name="stor" id="st3" data-sharkid="__25"><label for="st3">SharePoint</label></div>
+          <div class="pill"><input type="radio" name="stor" id="st4" data-sharkid="__26"><label for="st4">Box</label></div>
+          <div class="pill"><input type="radio" name="stor" id="st5" data-sharkid="__27"><label for="st5">None</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Online Banking Access Level</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="bank" id="bk1" data-sharkid="__28"><label for="bk1">Transaction initiating</label></div>
+          <div class="pill"><input type="radio" name="bank" id="bk2" data-sharkid="__29"><label for="bk2">View only</label></div>
+          <div class="pill"><input type="radio" name="bank" id="bk3" data-sharkid="__30"><label for="bk3">Not yet provided</label></div>
+        </div>
+      </div>
+      <div class="field span">
+        <label class="label">Third-Party Integrations with Accounting Software</label>
+        <div class="checks" style="grid-template-columns: repeat(3,1fr)">
+          <label class="chk"><input type="checkbox" data-sharkid="__31"><span class="chk-txt">Shopify</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__32"><span class="chk-txt">Stripe</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__33"><span class="chk-txt">Square</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__34"><span class="chk-txt">Gusto</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__35"><span class="chk-txt">Amazon Seller</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__36"><span class="chk-txt">PayPal</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__37"><span class="chk-txt">Bill.com</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__38"><span class="chk-txt">Expensify</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__39"><span class="chk-txt">HubSpot</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__40"><span class="chk-txt">Other</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Previous Accounting System</label>
+        <input type="text" placeholder="e.g. QuickBooks Desktop, Sage — we will request access/exports" data-sharkid="__41">
+      </div>
+      <div class="field">
+        <label class="label">Credit Cards (access / reconciliation)</label>
+        <input type="text" placeholder="Provider, who holds cards, how reconciled" data-sharkid="__42">
+      </div>
+      <div class="field span">
+        <label class="label">Previous Accountant / Bookkeeper</label>
+        <input type="text" placeholder="Name or firm — we will coordinate the handover" data-sharkid="__43">
+      </div>
+      <div class="field span">
+        <label class="label">Accounting System Document Uploads</label>
+        <div class="grid" style="gap:16px">
+          <div class="field">
+            <label class="label" style="font-size:9px">Chart of Accounts</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Historical Trial Balances</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Monthly P&amp;L &amp; Balance Sheets (2025 YTD)</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field span">
+        <label class="label">Existing SOPs for Accounting Functions?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="sop" id="sp1" data-sharkid="__44"><label for="sp1">Yes — will share</label></div>
+          <div class="pill"><input type="radio" name="sop" id="sp2" data-sharkid="__45"><label for="sp2">No</label></div>
+          <div class="pill"><input type="radio" name="sop" id="sp3" data-sharkid="__46"><label for="sp3">In progress</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 HISTORICAL DATA & DOCUMENTS -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">05</span><span class="sec-t">Historical Data &amp; Documents</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Outstanding Backlog or Open Items?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="bl" id="bl1" data-sharkid="__47"><label for="bl1">Yes</label></div>
+          <div class="pill"><input type="radio" name="bl" id="bl2" data-sharkid="__48"><label for="bl2">No</label></div>
+          <div class="pill"><input type="radio" name="bl" id="bl3" data-sharkid="__49"><label for="bl3">Unsure</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Fixed Asset Register Available?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="far" id="fa1" data-sharkid="__50"><label for="fa1">Yes</label></div>
+          <div class="pill"><input type="radio" name="far" id="fa2" data-sharkid="__51"><label for="fa2">No</label></div>
+          <div class="pill"><input type="radio" name="far" id="fa3" data-sharkid="__52"><label for="fa3">N/A</label></div>
+        </div>
+      </div>
+      <div class="field span">
+        <label class="label">Backlog / Open Items Notes</label>
+        <textarea placeholder="Describe any known backlog, corrections needed, or missing records..." data-sharkid="__53"></textarea>
+      </div>
+      <div class="field span">
+        <label class="label">Document Uploads</label>
+        <p class="note" style="margin-top:0;margin-bottom:16px">Upload any available documents now. All fields are optional — anything not available can be shared later via your Route One onboarding contact.</p>
+        <div class="grid" style="gap:16px">
+          <div class="field">
+            <label class="label" style="font-size:9px">Prior Year Audited Financials (P&amp;L, BS, TB)</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Loan Agreements &amp; Lease Contracts</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.docx,.doc" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Word</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">UK VAT Returns (last 3–6 months)</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">UK CT Tax Returns (past years)</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">US Sales Tax Returns (last 3–6 months)</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">US Federal Tax Returns (past years)</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Payroll Details</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Utility Bills &amp; Subscription Renewals</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, images</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field span">
+        <label class="label">Compliance Obligations</label>
+        <div class="checks" style="grid-template-columns: repeat(2,1fr)">
+          <label class="chk"><input type="checkbox" data-sharkid="__54"><span class="chk-txt">US Federal Tax Returns</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__55"><span class="chk-txt">UK Corporation Tax (CT)</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__56"><span class="chk-txt">US Sales Tax (multi-state)</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__57"><span class="chk-txt">UK VAT Returns</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__58"><span class="chk-txt">Payroll Tax Filings</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__59"><span class="chk-txt">Annual Audit</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__60"><span class="chk-txt">1099 / W-2 Filings</span></label>
+          <label class="chk"><input type="checkbox" data-sharkid="__61"><span class="chk-txt">International Transfer Pricing</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Financial Statements Audited?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="aud" id="au1" data-sharkid="__62"><label for="au1">Yes</label></div>
+          <div class="pill"><input type="radio" name="aud" id="au2" data-sharkid="__63"><label for="au2">No</label></div>
+          <div class="pill"><input type="radio" name="aud" id="au3" data-sharkid="__64"><label for="au3">Pending</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 ACCOUNTS RECEIVABLE -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">06</span><span class="sec-t">Accounts Receivable (AR)</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Follow Up on Outstanding AR? <span class="req">*</span></label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="ar" id="ar1" data-sharkid="__65"><label for="ar1">Yes</label></div>
+          <div class="pill"><input type="radio" name="ar" id="ar2" data-sharkid="__66"><label for="ar2">No</label></div>
+          <div class="pill"><input type="radio" name="ar" id="ar3" data-sharkid="__67"><label for="ar3">Escalate only</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">AR Escalation Contact</label>
+        <input type="text" placeholder="Name, email, or phone" data-sharkid="__68" data-sharklabel="email">
+      <shark-icon-container data-sharkidcontainer="__68" style="position: absolute;"><template shadowrootmode="open"><surfhark-icon data-sharkidicon="__68" style="background-image: url(&quot;chrome-extension://ailoabdmgclmfmhdagmlohpjlbpffblp/autofill-action-light.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: cover; position: absolute; right: 0px; visibility: visible; display: block; z-index: 1; border: none; cursor: pointer; padding: 0px; transition: none; pointer-events: all; opacity: 1; left: 276.2px; top: 34.3998px; width: 18px; height: 18px; min-width: 18px; min-height: 18px;"></surfhark-icon></template></shark-icon-container></div>
+      <div class="field">
+        <label class="label">Invoice Templates / Branding</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="inv" id="iv1" data-sharkid="__69"><label for="iv1">Standard format exists</label></div>
+          <div class="pill"><input type="radio" name="inv" id="iv2" data-sharkid="__70"><label for="iv2">No standard</label></div>
+          <div class="pill"><input type="radio" name="inv" id="iv3" data-sharkid="__71"><label for="iv3">Will provide</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Credit Note Process Applicable?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="cn" id="cn1" data-sharkid="__72"><label for="cn1">Yes</label></div>
+          <div class="pill"><input type="radio" name="cn" id="cn2" data-sharkid="__73"><label for="cn2">No</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 ACCOUNTS PAYABLE -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">07</span><span class="sec-t">Accounts Payable (AP)</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Bill Approval Hierarchy</label>
+        <input type="text" placeholder="e.g. Manager → CFO → CEO" data-sharkid="__74">
+      </div>
+      <div class="field">
+        <label class="label">Auto-Approve Bills Below</label>
+        <div class="pfx-wrap">
+          <span class="pfx">$</span>
+          <input type="number" class="pfx-in" placeholder="0" style="padding-left:32px" data-sharkid="__75">
+        </div>
+      </div>
+      <div class="field span">
+        <label class="label">Petty Cash / Expense Reimbursement Policy</label>
+        <textarea placeholder="Limits, submission process, approval chain..." data-sharkid="__76"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 ACCOUNTING SETUP -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">08</span><span class="sec-t">Accounting Setup</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Chart of Accounts — Review Needed?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="coa" id="co1" data-sharkid="__77"><label for="co1">Yes</label></div>
+          <div class="pill"><input type="radio" name="coa" id="co2" data-sharkid="__78"><label for="co2">No — looks good</label></div>
+          <div class="pill"><input type="radio" name="coa" id="co3" data-sharkid="__79"><label for="co3">Not sure</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Bank Rules / Auto-Matching in Place?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="br" id="br1" data-sharkid="__80"><label for="br1">Yes</label></div>
+          <div class="pill"><input type="radio" name="br" id="br2" data-sharkid="__81"><label for="br2">No</label></div>
+          <div class="pill"><input type="radio" name="br" id="br3" data-sharkid="__82"><label for="br3">Unknown</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">User Roles &amp; Permissions — Review Needed?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="urp" id="ur1" data-sharkid="__83"><label for="ur1">Yes</label></div>
+          <div class="pill"><input type="radio" name="urp" id="ur2" data-sharkid="__84"><label for="ur2">No</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 09 REPORTING & COMMUNICATION -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">09</span><span class="sec-t">Reporting &amp; Communication</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Reporting Frequency <span class="req">*</span></label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="freq" id="fr1" data-sharkid="__85"><label for="fr1">Weekly</label></div>
+          <div class="pill"><input type="radio" name="freq" id="fr2" data-sharkid="__86"><label for="fr2">Bi-Monthly</label></div>
+          <div class="pill"><input type="radio" name="freq" id="fr3" data-sharkid="__87"><label for="fr3">Monthly</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Report Format <span class="req">*</span></label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="fmt" id="fm1" data-sharkid="__88"><label for="fm1">Excel</label></div>
+          <div class="pill"><input type="radio" name="fmt" id="fm2" data-sharkid="__89"><label for="fm2">PDF</label></div>
+          <div class="pill"><input type="radio" name="fmt" id="fm3" data-sharkid="__90"><label for="fm3">Dashboard</label></div>
+          <div class="pill"><input type="radio" name="fmt" id="fm4" data-sharkid="__91"><label for="fm4">G-Sheets</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Preferred Communication Channel <span class="req">*</span></label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="ch" id="ch1" data-sharkid="__92"><label for="ch1">Email</label></div>
+          <div class="pill"><input type="radio" name="ch" id="ch2" data-sharkid="__93"><label for="ch2">WhatsApp</label></div>
+          <div class="pill"><input type="radio" name="ch" id="ch3" data-sharkid="__94"><label for="ch3">Slack</label></div>
+          <div class="pill"><input type="radio" name="ch" id="ch4" data-sharkid="__95"><label for="ch4">Teams</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">AR Follow-Up Schedule</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="arsch" id="as1" data-sharkid="__96"><label for="as1">Weekly</label></div>
+          <div class="pill"><input type="radio" name="arsch" id="as2" data-sharkid="__97"><label for="as2">Bi-weekly</label></div>
+          <div class="pill"><input type="radio" name="arsch" id="as3" data-sharkid="__98"><label for="as3">Monthly</label></div>
+        </div>
+      </div>
+      <div class="field span">
+        <label class="label">Additional Notes</label>
+        <textarea placeholder="Anything else we should know before kickoff..." data-sharkid="__99"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 REVENUE & CONTRACT WORKFLOW -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">10</span><span class="sec-t">Revenue &amp; Contract Workflow</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Who secures work / brings in clients?</label>
+        <input type="text" placeholder="e.g. Agents, managers, directors" data-sharkid="__100">
+      </div>
+      <div class="field">
+        <label class="label">Who receives deal confirmations?</label>
+        <input type="text" placeholder="Name or role" data-sharkid="__101">
+      </div>
+      <div class="field">
+        <label class="label">Where are contracts stored?</label>
+        <input type="text" placeholder="e.g. Google Drive folder, DocuSign, Dropbox" data-sharkid="__102">
+      </div>
+      <div class="field">
+        <label class="label">Who tracks deals internally?</label>
+        <input type="text" placeholder="Name or role" data-sharkid="__103">
+      </div>
+      <div class="field">
+        <label class="label">Typical deal / payment structure</label>
+        <textarea placeholder="e.g. Fixed fee, revenue share, milestone payments..." style="min-height:72px" data-sharkid="__104"></textarea>
+      </div>
+      <div class="field">
+        <label class="label">Management fee %</label>
+        <input type="text" placeholder="e.g. 10%" data-sharkid="__105">
+      </div>
+      <div class="field">
+        <label class="label">Legal / other fee %</label>
+        <input type="text" placeholder="e.g. 5% legal fee" data-sharkid="__106">
+      </div>
+      <div class="field">
+        <label class="label">Commission structure</label>
+        <textarea placeholder="Describe agent/manager commission rates and how they are calculated..." style="min-height:72px" data-sharkid="__107"></textarea>
+      </div>
+      <div class="field span">
+        <label class="label">Do you have an active deal pipeline tracked anywhere?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="pipe" id="pp1" data-sharkid="__108"><label for="pp1">Yes — will share</label></div>
+          <div class="pill"><input type="radio" name="pipe" id="pp2" data-sharkid="__109"><label for="pp2">No</label></div>
+          <div class="pill"><input type="radio" name="pipe" id="pp3" data-sharkid="__110"><label for="pp3">Informal / ad hoc</label></div>
+        </div>
+      </div>
+      <div class="field span">
+        <label class="label">Contract &amp; Deal Document Uploads</label>
+        <p class="note" style="margin-top:0;margin-bottom:16px">Upload copies of active contracts, historical contracts, and deal pipeline if available.</p>
+        <div class="grid" style="gap:16px">
+          <div class="field">
+            <label class="label" style="font-size:9px">Active Contracts</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.docx,.doc,.xlsx" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Word, Excel</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Historical Contracts</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.docx,.doc,.xlsx" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Word, Excel</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Deal Pipeline / Tracker</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">Excel, CSV, PDF</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Client Roster</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv,.docx" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">Any format</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11 BILLING & ACCOUNTS RECEIVABLE DETAIL -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">11</span><span class="sec-t">Billing &amp; AR Detail</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Who creates invoices?</label>
+        <input type="text" placeholder="Name or role" data-sharkid="__111">
+      </div>
+      <div class="field">
+        <label class="label">What system generates invoices?</label>
+        <input type="text" placeholder="e.g. QuickBooks, Xero, manual" data-sharkid="__112">
+      </div>
+      <div class="field">
+        <label class="label">When are invoices issued?</label>
+        <input type="text" placeholder="e.g. On contract signing, on delivery, monthly" data-sharkid="__113">
+      </div>
+      <div class="field">
+        <label class="label">Who tracks receivables?</label>
+        <input type="text" placeholder="Name or role" data-sharkid="__114">
+      </div>
+      <div class="field">
+        <label class="label">Who follows up on unpaid invoices?</label>
+        <input type="text" placeholder="Name or role" data-sharkid="__115">
+      </div>
+      <div class="field">
+        <label class="label">Collection history — any chronic late payers?</label>
+        <textarea placeholder="Note any patterns or problem accounts..." style="min-height:64px" data-sharkid="__116"></textarea>
+      </div>
+      <div class="field span">
+        <label class="label">AR Document Uploads</label>
+        <div class="grid" style="gap:16px">
+          <div class="field">
+            <label class="label" style="font-size:9px">AR Aging Report</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Open Invoices List</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 AP & EXPENSES DETAIL -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">12</span><span class="sec-t">AP &amp; Expenses Detail</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Who approves expenses?</label>
+        <input type="text" placeholder="Name or role" data-sharkid="__117">
+      </div>
+      <div class="field">
+        <label class="label">How are vendor invoices submitted?</label>
+        <input type="text" placeholder="e.g. Email, accounting software, paper" data-sharkid="__118" data-sharklabel="email">
+      <shark-icon-container data-sharkidcontainer="__118" style="position: absolute;"><template shadowrootmode="open"><surfhark-icon data-sharkidicon="__118" style="background-image: url(&quot;chrome-extension://ailoabdmgclmfmhdagmlohpjlbpffblp/autofill-action-light.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: cover; position: absolute; right: 0px; visibility: visible; display: block; z-index: 1; border: none; cursor: pointer; padding: 0px; transition: none; pointer-events: all; opacity: 1; left: 276.2px; top: 34.3998px; width: 18px; height: 18px; min-width: 18px; min-height: 18px;"></surfhark-icon></template></shark-icon-container></div>
+      <div class="field">
+        <label class="label">Who processes payments?</label>
+        <input type="text" placeholder="Name or role" data-sharkid="__119">
+      </div>
+      <div class="field">
+        <label class="label">Credit card process</label>
+        <textarea placeholder="Who holds cards, how are statements reconciled..." style="min-height:64px" data-sharkid="__120"></textarea>
+      </div>
+      <div class="field span">
+        <label class="label">AP Document Uploads</label>
+        <div class="grid" style="gap:16px">
+          <div class="field">
+            <label class="label" style="font-size:9px">Vendor List</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Recurring Expenses List</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13 PAYROLL & TALENT PAYMENTS -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">13</span><span class="sec-t">Payroll &amp; Talent Payments</span></div>
+    <div class="grid">
+      <div class="field">
+        <label class="label">Does your company pay talent directly?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="talentpay" id="tp1" data-sharkid="__121"><label for="tp1">Yes — direct</label></div>
+          <div class="pill"><input type="radio" name="talentpay" id="tp2" data-sharkid="__122"><label for="tp2">Pass-through only</label></div>
+          <div class="pill"><input type="radio" name="talentpay" id="tp3" data-sharkid="__123"><label for="tp3">Both</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Are commissions calculated automatically or manually?</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="commcalc" id="cc1" data-sharkid="__124"><label for="cc1">Automatically</label></div>
+          <div class="pill"><input type="radio" name="commcalc" id="cc2" data-sharkid="__125"><label for="cc2">Manually</label></div>
+          <div class="pill"><input type="radio" name="commcalc" id="cc3" data-sharkid="__126"><label for="cc3">Mixed</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Payroll schedule</label>
+        <div class="pills">
+          <div class="pill"><input type="radio" name="paysch" id="ps1" data-sharkid="__127"><label for="ps1">Weekly</label></div>
+          <div class="pill"><input type="radio" name="paysch" id="ps2" data-sharkid="__128"><label for="ps2">Bi-weekly</label></div>
+          <div class="pill"><input type="radio" name="paysch" id="ps3" data-sharkid="__129"><label for="ps3">Semi-monthly</label></div>
+          <div class="pill"><input type="radio" name="paysch" id="ps4" data-sharkid="__130"><label for="ps4">Monthly</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Talent payout timing</label>
+        <input type="text" placeholder="e.g. Net 30 after client payment received" data-sharkid="__131">
+      </div>
+      <div class="field span">
+        <label class="label">Bonus / commission structure per agent or role</label>
+        <textarea placeholder="Describe how bonuses and commissions are structured per agent, manager, or role..." style="min-height:72px" data-sharkid="__132"></textarea>
+      </div>
+      <div class="field span">
+        <label class="label">Payroll Document Uploads</label>
+        <div class="grid" style="gap:16px">
+          <div class="field">
+            <label class="label" style="font-size:9px">Employee vs Contractor List</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Payroll Reports (YTD)</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Employee Roster</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, CSV</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Compensation / Commission Structure</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.docx" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">PDF, Excel, Word</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14 TEAM ROLES & RESPONSIBILITIES -->
+  <div class="section">
+    <div class="sec-head"><span class="sec-n">14</span><span class="sec-t">Team Roles &amp; Responsibilities</span></div>
+    <div class="grid">
+      <div class="field span">
+        <label class="label">Team overview</label>
+        <textarea placeholder="List your managers, agents, assistants, and operations roles — who owns what, what systems they use, and what data they control..." style="min-height:96px" data-sharkid="__133"></textarea>
+      </div>
+      <div class="field">
+        <label class="label">Total number of managers / agents</label>
+        <input type="number" placeholder="e.g. 4" data-sharkid="__134">
+      </div>
+      <div class="field">
+        <label class="label">Total number of active talent</label>
+        <input type="number" placeholder="e.g. 12" data-sharkid="__135">
+      </div>
+      <div class="field span">
+        <label class="label">Team &amp; Org Chart Uploads</label>
+        <div class="grid" style="gap:16px">
+          <div class="field">
+            <label class="label" style="font-size:9px">Org Chart / Team Structure</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.pptx,.png,.jpg" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">Any format</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" style="font-size:9px">Financial Trackers Currently Maintained</label>
+            <div class="upload-box" onclick="this.querySelector('input').click()">
+              <input type="file" accept=".pdf,.xlsx,.xls,.csv,.gsheet" multiple="">
+              <div class="upload-inner">
+                <div class="upload-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"></path><path d="M3 14v1a2 2 0 002 2h10a2 2 0 002-2v-1"></path></svg></div>
+                <div class="upload-text">Click to upload</div>
+                <div class="upload-hint">Excel, CSV, PDF</div>
+              </div>
+              <div class="upload-files"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p class="fine">By submitting this form you confirm the information provided is accurate. Route One Consultancy treats all client data with strict confidentiality.</p>
+    <button type="submit" class="submit-btn">Submit Intake</button>
+  </div>
+
+</form>
+
+<div class="success" id="ok">
+  <div class="ok-icon">
+    <svg viewBox="0 0 18 18"><polyline points="2,9 7,14 16,4"></polyline></svg>
+  </div>
+  <h3>Intake received.</h3>
+  <p>A member of the Route One team will be in touch within one business day to confirm next steps.</p>
+</div>
+
+</div>
+
+<script>
+  let cc = 1;
+  const roles = ['Secondary Contact','Accounts Payable','Accounts Receivable','Finance Lead','Operations'];
+
+  document.getElementById('addC').addEventListener('click', function() {
+    cc++;
+    const role = roles[Math.min(cc - 2, roles.length - 1)];
+    const d = document.createElement('div');
+    d.className = 'card';
+    d.innerHTML = `
+      <div class="card-head">
+        <span class="card-tag">${role}</span>
+        <button type="button" class="card-rm" onclick="this.closest('.card').remove()">Remove</button>
+      </div>
+      <div class="grid">
+        <div class="field"><label class="label">Full Name</label><input type="text" placeholder="First Last" /></div>
+        <div class="field"><label class="label">Title / Role</label><input type="text" placeholder="e.g. AP Manager" /></div>
+        <div class="field"><label class="label">Email</label><input type="email" placeholder="name@company.com" /></div>
+        <div class="field"><label class="label">Phone / WhatsApp</label><input type="tel" placeholder="+1 (555) 000-0000" /></div>
+      </div>`;
+    document.getElementById('cWrap').appendChild(d);
+  });
+
+  // File upload handlers
+  document.querySelectorAll('.upload-box').forEach(box => {
+    const input = box.querySelector('input[type="file"]');
+    const fileList = box.querySelector('.upload-files');
+    input.addEventListener('change', function(e) {
+      e.stopPropagation();
+      Array.from(this.files).forEach(file => {
+        const item = document.createElement('div');
+        item.className = 'upload-file-item';
+        item.innerHTML = `<span title="${file.name}">${file.name}</span><button type="button" class="upload-file-rm" onclick="this.parentElement.remove(); updateBoxState(this.closest('.upload-box'))">✕</button>`;
+        fileList.appendChild(item);
+      });
+      updateBoxState(box);
+      this.value = '';
+    });
+  });
+
+  function updateBoxState(box) {
+    const items = box.querySelectorAll('.upload-file-item');
+    box.classList.toggle('has-files', items.length > 0);
+  }
+    e.preventDefault();
+    this.style.opacity = '0.15';
+    this.style.pointerEvents = 'none';
+    const ok = document.getElementById('ok');
+    ok.classList.add('on');
+    ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+</script>
+
+
+</body>

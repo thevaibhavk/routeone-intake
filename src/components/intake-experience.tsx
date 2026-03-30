@@ -1,0 +1,464 @@
+"use client";
+
+import clsx from "clsx";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
+import { intakeSections, contactRoleSuggestions, type BaseField } from "@/lib/form-schema";
+import { computeCompletion } from "@/lib/intake";
+import type { Contact, InviteRecord, UploadItem } from "@/lib/store";
+import { RouteOneLogo } from "@/components/routeone-logo";
+
+type PublicInvite = Omit<InviteRecord, "otpHash" | "otpExpiresAt" | "draft"> & {
+  draft: {
+    values: Record<string, string | string[]>;
+    contacts: Contact[];
+    uploads: Record<string, UploadItem[]>;
+    completion: number;
+    lastSavedAt: string | null;
+  };
+};
+
+type SaveState = "idle" | "saving" | "saved" | "error";
+
+function emptyContact(role = "Primary Contact"): Contact {
+  return { id: crypto.randomUUID(), role, name: "", title: "", email: "", phone: "" };
+}
+
+export function IntakeExperience() {
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("invite") || "";
+  const [invite, setInvite] = useState<PublicInvite | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [values, setValues] = useState<Record<string, string | string[]>>({});
+  const [contacts, setContacts] = useState<Contact[]>([emptyContact()]);
+  const [uploads, setUploads] = useState<Record<string, UploadItem[]>>({});
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [submitState, setSubmitState] = useState<"idle" | "submitting" | "submitted">("idle");
+  const didHydrate = useRef(false);
+
+  useEffect(() => {
+    if (!inviteToken) return;
+    fetch(`/api/client/session?invite=${inviteToken}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setInvite(data.invite);
+        setAuthenticated(data.authenticated);
+        if (data.invite?.draft) {
+          setValues(data.invite.draft.values || {});
+          setContacts(data.invite.draft.contacts?.length ? data.invite.draft.contacts : [emptyContact()]);
+          setUploads(data.invite.draft.uploads || {});
+          if (data.invite.submittedAt) setSubmitState("submitted");
+        }
+      });
+  }, [inviteToken]);
+
+  const completion = useMemo(() => computeCompletion({ values, contacts, uploads }), [values, contacts, uploads]);
+
+  useEffect(() => {
+    if (!authenticated || !invite || !didHydrate.current) return;
+    const timeout = window.setTimeout(() => {
+      setSaveState("saving");
+      fetch("/api/client/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inviteId: invite.id,
+          inviteToken: invite.token,
+          values,
+          contacts,
+          uploads,
+        }),
+      })
+        .then((res) => res.json())
+        .then(() => setSaveState("saved"))
+        .catch(() => setSaveState("error"));
+    }, 700);
+
+    return () => window.clearTimeout(timeout);
+  }, [authenticated, invite, values, contacts, uploads]);
+
+  useEffect(() => {
+    if (invite) {
+      didHydrate.current = true;
+    }
+  }, [invite]);
+
+  function updateValue(fieldId: string, value: string | string[]) {
+    startTransition(() => setValues((current) => ({ ...current, [fieldId]: value })));
+  }
+
+  function addContact() {
+    const role = contactRoleSuggestions[Math.min(contacts.length, contactRoleSuggestions.length - 1)];
+    setContacts((current) => [...current, emptyContact(role)]);
+  }
+
+  async function uploadFile(fieldId: string, fileList: FileList | null) {
+    if (!invite || !fileList?.length) return;
+    for (const file of Array.from(fileList)) {
+      const formData = new FormData();
+      formData.append("inviteToken", invite.token);
+      formData.append("fieldId", fieldId);
+      formData.append("file", file);
+      const response = await fetch("/api/client/upload", { method: "POST", body: formData });
+      const data = await response.json();
+      setUploads(data.uploads);
+    }
+  }
+
+  async function removeFile(fieldId: string, fileId: string) {
+    if (!invite) return;
+    const response = await fetch(
+      `/api/client/upload?inviteToken=${invite.token}&fieldId=${fieldId}&fileId=${fileId}`,
+      { method: "DELETE" },
+    );
+    const data = await response.json();
+    setUploads(data.uploads);
+  }
+
+  function submit() {
+    if (!invite) return;
+    setSubmitState("submitting");
+    fetch("/api/client/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inviteId: invite.id, inviteToken: invite.token }),
+    })
+      .then(() => setSubmitState("submitted"))
+      .catch(() => setSubmitState("idle"));
+  }
+
+  return (
+    <div className="intake-page">
+      <header className="topbar">
+        <div className="topbar-inner">
+          <div className="topbar-brand">
+            <img src="/RouteOne-Logo-dark-theme.svg" alt="Route One" style={{ height: 28, display: "block" }} />
+          </div>
+          <div className="topbar-status" data-tone={submitState === "submitted" ? "submitted" : invite?.status || "invited"}>
+            {submitState === "submitted" ? "Submitted" : authenticated ? "Verified Access" : "Secure Intake"}
+          </div>
+        </div>
+      </header>
+
+      <section className="intake-hero">
+        <div className="hero-inner intake-hero-inner">
+          <div className="hero-badge">
+            <div className="hero-badge-dot" />
+            Form
+          </div>
+          <div className="hero-h">RouteOne</div>
+          <div className="hero-h-italic">Client Onboarding</div>
+          <p className="hero-tagline">
+            Welcome. Please complete the form below so we can get everything we need to hit the ground running. It should only take a few minutes — your progress is saved automatically.
+          </p>
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <div className="hs-num">{completion}%</div>
+              <div className="hs-lbl">Form completion</div>
+            </div>
+            <div className="hero-stat">
+              <div className="hs-num">{contacts.length}</div>
+              <div className="hs-lbl">Key contacts</div>
+            </div>
+            <div className="hero-stat">
+              <div className="hs-num">{intakeSections.length}</div>
+              <div className="hs-lbl">Core sections</div>
+            </div>
+            <div className="hero-stat">
+              <div className="hs-num">
+                {saveState === "saving" ? "..." : saveState === "saved" ? "OK" : saveState === "error" ? "ERR" : "ON"}
+              </div>
+              <div className="hs-lbl">Autosave status</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {!inviteToken ? (
+        <section className="content-section">
+          <div className="content-inner single-column">
+            <div className="editorial-card stack">
+              <div className="sec-divider"><span className="sec-n">00</span><span className="sec-t">Open your invite</span></div>
+              <h2 className="editorial-title">Open your Route One intake link</h2>
+              <p className="editorial-copy">Use the unique Route One intake URL from your email. It should look like `/?invite=...`.</p>
+            </div>
+          </div>
+        </section>
+      ) : !authenticated ? (
+        <section className="content-section off">
+          <div className="content-inner single-column">
+            <div className="editorial-card stack">
+              <div className="sec-divider"><span className="sec-n">01</span><span className="sec-t">Loading</span></div>
+              <h2 className="editorial-title">Verifying your access…</h2>
+              <p className="editorial-copy">Please wait while we load your intake form.</p>
+            </div>
+          </div>
+        </section>
+      ) : submitState === "submitted" ? (
+        <section className="content-section">
+          <div className="content-inner single-column">
+            <div className="editorial-card stack success-panel">
+              <div className="sec-divider"><span className="sec-n">Done</span><span className="sec-t">Intake received</span></div>
+              <h2 className="editorial-title">Route One has your submission</h2>
+              <p className="editorial-copy">Your responses remain saved if you need to return later, and the team can now review everything from admin.</p>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <>
+          <section className="content-section off">
+            <div className="content-inner intake-topbar-layout">
+              <div className="intake-topbar-left">
+                <div className="sidebar-card stack">
+                  <div className="sec-divider"><span className="sec-n">00</span><span className="sec-t">Key contacts</span></div>
+                  <div className="section-intro">
+                    <div>
+                      <h2 className="editorial-title">Key Contacts</h2>
+                      <p className="editorial-copy">Identify the primary people Route One should coordinate with across onboarding and delivery.</p>
+                    </div>
+                    <button className="btn-outline" onClick={addContact}>Add contact</button>
+                  </div>
+                  <div className="stack">
+                    {contacts.map((contact, index) => (
+                      <div className="contact-card" key={contact.id}>
+                        <div className="card-headline">
+                          <span className="card-tag">{contact.role || `Contact ${index + 1}`}</span>
+                          {index > 0 ? (
+                            <button className="text-button" onClick={() => setContacts((current) => current.filter((item) => item.id !== contact.id))}>Remove</button>
+                          ) : null}
+                        </div>
+                        <div className="field-grid">
+                          {[
+                            ["role", "Role"],
+                            ["name", "Full Name"],
+                            ["title", "Title / Role"],
+                            ["email", "Email"],
+                            ["phone", "Phone / WhatsApp"],
+                          ].map(([key, label]) => (
+                            <div className="field" key={key}>
+                              <label className="label">{label}{index === 0 && ["name", "title", "email"].includes(key) ? <span className="req"> *</span> : null}</label>
+                              <input
+                                className="input"
+                                value={contact[key as keyof Contact] as string}
+                                onChange={(e) =>
+                                  setContacts((current) =>
+                                    current.map((item) => (item.id === contact.id ? { ...item, [key]: e.target.value } : item)),
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="intake-topbar-right">
+                <div className="sidebar-card sticky stack">
+                  <div className="sec-divider"><span className="sec-n">Nav</span><span className="sec-t">Form sections</span></div>
+                  <div className="progress-block stack">
+                    <strong className="progress-value">{completion}%</strong>
+                    <div className="progress"><span style={{ width: `${completion}%` }} /></div>
+                    <span className="meta-copy">
+                      {saveState === "saving" ? "Saving…" : saveState === "saved" ? "All changes saved." : saveState === "error" ? "Save failed." : "Autosave is on."}
+                    </span>
+                  </div>
+                  <div className="section-nav">
+                    <a className="nav-item active" href="#contacts"><span className="nav-item-title">Contacts</span><span className="nav-item-meta">{contacts.length}</span></a>
+                    {intakeSections.map((section) => (
+                      <a key={section.id} className="nav-item" href={`#${section.id}`}>
+                        <span className="nav-item-meta">{section.number}</span>
+                        <span className="nav-item-title">{section.title}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="content-section off">
+            <div className="content-inner intake-full-width stack-lg">
+              {intakeSections.map((section) => (
+                <section id={section.id} key={section.id} className="form-section">
+                  <div className="sec-divider"><span className="sec-n">{section.number}</span><span className="sec-t">{section.title}</span></div>
+                  <div className="section-intro split">
+                    <div>
+                      <h2 className="editorial-title">{section.title}</h2>
+                      {section.description ? <p className="editorial-copy">{section.description}</p> : null}
+                    </div>
+                  </div>
+                  <div className="field-grid">
+                    {section.fields.map((field) => (
+                      <FieldRenderer
+                        key={field.id}
+                        field={field}
+                        value={values[field.id]}
+                        uploads={uploads[field.id] || []}
+                        onChange={(value) => updateValue(field.id, value)}
+                        onUpload={(files) => uploadFile(field.id, files)}
+                        onRemoveUpload={(fileId) => removeFile(field.id, fileId)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+
+              <section className="form-section submit-section">
+                <div className="sec-divider"><span className="sec-n">End</span><span className="sec-t">Submit intake</span></div>
+                <div className="submit-row">
+                  <p className="editorial-copy submit-copy">
+                    By submitting this form you confirm the information provided is accurate. Route One treats all client
+                    data with strict confidentiality.
+                  </p>
+                  <button className="btn" onClick={submit}>Submit intake</button>
+                </div>
+              </section>
+            </div>
+          </section>
+        </>
+      )}
+    </div>
+  );
+  }
+
+function FieldRenderer({
+  field,
+  value,
+  uploads,
+  onChange,
+  onUpload,
+  onRemoveUpload,
+}: {
+  field: BaseField;
+  value: string | string[] | undefined;
+  uploads: UploadItem[];
+  onChange: (value: string | string[]) => void;
+  onUpload: (files: FileList | null) => void;
+  onRemoveUpload: (fileId: string) => void;
+}) {
+  const isFull = field.type === "textarea" || field.type === "checkbox-group" || field.type === "upload";
+  const label = (
+    <label className="label">
+      {field.label}
+      {field.required ? <span className="req"> *</span> : null}
+    </label>
+  );
+
+  if (field.type === "textarea") {
+    return (
+      <div className="field full">
+        {label}
+        <textarea className="textarea" value={String(value || "")} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} />
+      </div>
+    );
+  }
+
+  if (field.type === "select") {
+    return (
+      <div className={clsx("field", isFull && "full")}>
+        {label}
+        <select className="select" value={String(value || "")} onChange={(e) => onChange(e.target.value)}>
+          <option value="">Select an option</option>
+          {field.options?.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      </div>
+    );
+  }
+
+  if (field.type === "radio") {
+    return (
+      <div className={clsx("field", isFull && "full")}>
+        {label}
+        <div className="choices pills">
+          {field.options?.map((option) => (
+            <div className="pill" data-active={value === option.value} key={option.value}>
+              <input type="radio" checked={value === option.value} onChange={() => onChange(option.value)} />
+              <label>{option.label}</label>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (field.type === "checkbox-group") {
+    const selected = Array.isArray(value) ? value : [];
+    return (
+      <div className="field full">
+        {label}
+        <div className="choices pills">
+          {field.options?.map((option) => {
+            const active = selected.includes(option.value);
+            return (
+              <div className="pill" data-active={active} key={option.value}>
+                <input
+                  type="checkbox"
+                  checked={active}
+                  onChange={() =>
+                    onChange(active ? selected.filter((item) => item !== option.value) : [...selected, option.value])
+                  }
+                />
+                <label>{option.label}</label>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  if (field.type === "upload") {
+    return (
+      <div className="field full">
+        {label}
+        <div className="upload">
+          <label className="upload-trigger">
+            <span className="upload-title">Add files</span>
+            <span className="upload-hint">Upload supporting documents for this section.</span>
+            <input type="file" multiple={field.multiple} accept={field.accept} onChange={(e) => onUpload(e.target.files)} />
+          </label>
+          <div className="upload-files">
+            {uploads.length ? uploads.map((file) => (
+              <span className="file-chip" key={file.id}>
+                <span>{file.originalName}</span>
+                <button className="text-button" onClick={() => onRemoveUpload(file.id)}>Remove</button>
+              </span>
+            )) : <span className="meta-copy">No files uploaded yet.</span>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={clsx("field", isFull && "full")}>
+      {label}
+      {field.prefix ? (
+        <div className="prefix-wrap">
+          <span>{field.prefix}</span>
+          <input
+            className="input with-prefix"
+            type={field.type}
+            value={String(value || "")}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={field.placeholder}
+          />
+        </div>
+      ) : (
+        <input
+          className="input"
+          type={field.type}
+          value={String(value || "")}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={field.placeholder}
+        />
+      )}
+    </div>
+  );
+}
