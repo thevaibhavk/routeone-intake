@@ -35,6 +35,8 @@ export function IntakeExperience() {
   const [uploads, setUploads] = useState<Record<string, UploadItem[]>>({});
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [submitState, setSubmitState] = useState<"idle" | "submitting" | "submitted">("idle");
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [consentDeclined, setConsentDeclined] = useState(false);
   const didHydrate = useRef(false);
 
   useEffect(() => {
@@ -130,6 +132,64 @@ export function IntakeExperience() {
 
   return (
     <div className="intake-page">
+      {authenticated && !consentGiven && !consentDeclined && submitState !== "submitted" && (
+        <div className="consent-overlay">
+          <div className="consent-dialog">
+            <div className="consent-dialog-header">
+              <div className="hero-badge" style={{ marginBottom: 0 }}>
+                <div className="hero-badge-dot" />
+                Data &amp; Privacy
+              </div>
+              <h2 className="consent-title">Before you begin</h2>
+            </div>
+            <div className="consent-body">
+              <p className="consent-lead">Please read and accept our data policy before completing your intake form.</p>
+              <div className="consent-policy">
+                <div className="consent-policy-section">
+                  <h3>What we collect</h3>
+                  <p>We collect the information you provide in this form, including company details, key contacts, and any documents you upload. This is used solely to onboard you as a Route One client.</p>
+                </div>
+                <div className="consent-policy-section">
+                  <h3>How we use it</h3>
+                  <p>Your data is used exclusively by the Route One team to set up your account, coordinate onboarding, and deliver our services. It is never sold or shared with third parties.</p>
+                </div>
+                <div className="consent-policy-section">
+                  <h3>How we store it</h3>
+                  <p>All submissions are stored securely. Uploaded documents are kept in a private, access-controlled environment. You may request deletion of your data at any time by contacting us.</p>
+                </div>
+                <div className="consent-policy-section">
+                  <h3>Your rights</h3>
+                  <p>You have the right to access, correct, or request deletion of your personal data at any time. Contact <a href="mailto:privacy@routeone.com">privacy@routeone.com</a> for any data-related requests.</p>
+                </div>
+              </div>
+            </div>
+            <div className="consent-actions">
+              <button className="btn-outline consent-decline" onClick={() => setConsentDeclined(true)}>Decline</button>
+              <button className="btn" onClick={() => setConsentGiven(true)}>I accept — continue to form</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {consentDeclined && (
+        <div className="consent-overlay">
+          <div className="consent-dialog">
+            <div className="consent-dialog-header">
+              <div className="hero-badge" style={{ marginBottom: 0 }}>
+                <div className="hero-badge-dot" style={{ background: "var(--danger)" }} />
+                Access Restricted
+              </div>
+              <h2 className="consent-title">You have declined</h2>
+            </div>
+            <div className="consent-body">
+              <p className="consent-lead">You need to accept the data policy to access and complete the intake form. No data has been collected.</p>
+              <p className="editorial-copy">If you&apos;d like to reconsider, you can go back and accept. If you have concerns about our data practices, contact us at <a href="mailto:privacy@routeone.com">privacy@routeone.com</a>.</p>
+            </div>
+            <div className="consent-actions">
+              <button className="btn" onClick={() => setConsentDeclined(false)}>Go back and review</button>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="topbar">
         <div className="topbar-inner">
           <div className="topbar-brand">
@@ -281,7 +341,7 @@ export function IntakeExperience() {
           </section>
 
           <section className="content-section off">
-            <div className="content-inner intake-full-width stack-lg">
+            <div className="content-inner stack-lg">
               {intakeSections.map((section) => (
                 <section id={section.id} key={section.id} className="form-section">
                   <div className="sec-divider"><span className="sec-n">{section.number}</span><span className="sec-t">{section.title}</span></div>
@@ -340,7 +400,7 @@ function FieldRenderer({
   onUpload: (files: FileList | null) => void;
   onRemoveUpload: (fileId: string) => void;
 }) {
-  const isFull = field.type === "textarea" || field.type === "checkbox-group" || field.type === "upload";
+  const isFull = field.type === "textarea" || field.type === "checkbox-group";
   const label = (
     <label className="label">
       {field.label}
@@ -415,7 +475,7 @@ function FieldRenderer({
 
   if (field.type === "upload") {
     return (
-      <div className="field full">
+      <div className="field">
         {label}
         <div className="upload">
           <label className="upload-trigger">

@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 
 import { getClientSession } from "@/lib/auth";
 import { deleteUpload, getInviteByToken, persistUpload, saveDraft, updateInviteDrive } from "@/lib/store";
@@ -22,21 +20,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invite not found." }, { status: 404 });
   }
 
-  const upload = await persistUpload(file, fieldId);
+  const { item: upload, buffer } = await persistUpload(file, fieldId);
 
-  // Upload to Google Drive (fire and update driveFileLink)
-  const storagePath = path.join(process.cwd(), "storage", "uploads", upload.storedName);
   try {
-    const fileBuffer = await readFile(storagePath);
     const driveResult = await driveUploadFile({
-      fileBuffer,
+      fileBuffer: buffer,
       fileName: upload.originalName,
       mimeType: upload.mimeType,
       companyName: invite.companyName,
     });
     if (driveResult) {
       upload.driveFileLink = driveResult.fileLink;
-      // Persist Drive folder on invite if not already set
       if (!invite.driveFolderId) {
         await updateInviteDrive(invite.id, driveResult.folderId, driveResult.folderLink);
         sheetUpdateDriveFolder({

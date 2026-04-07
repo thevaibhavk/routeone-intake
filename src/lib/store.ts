@@ -1,6 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { Redis } from "@upstash/redis";
 
 export type Contact = {
   id: string;
@@ -50,13 +49,18 @@ export type InviteRecord = {
   draft: Draft;
 };
 
-type Database = {
-  invites: InviteRecord[];
-};
+function getRedis() {
+  return new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  });
+}
 
-const storageRoot = path.join(process.cwd(), "storage");
-const uploadsRoot = path.join(storageRoot, "uploads");
-const dbPath = path.join(storageRoot, "db.json");
+const INVITES_INDEX = "invites:all";
+
+function inviteKey(id: string) {
+  return `invite:${id}`;
+}
 
 const defaultDraft = (): Draft => ({
   values: {},
@@ -75,40 +79,22 @@ const defaultDraft = (): Draft => ({
   lastSavedAt: null,
 });
 
-const defaultDb: Database = { invites: [] };
-
-async function ensureStorage() {
-  await mkdir(storageRoot, { recursive: true });
-  await mkdir(uploadsRoot, { recursive: true });
-  try {
-    await readFile(dbPath, "utf8");
-  } catch {
-    await writeFile(dbPath, JSON.stringify(defaultDb, null, 2), "utf8");
-  }
-}
-
-async function readDb() {
-  await ensureStorage();
-  const raw = await readFile(dbPath, "utf8");
-  return JSON.parse(raw) as Database;
-}
-
-async function writeDb(data: Database) {
-  await ensureStorage();
-  await writeFile(dbPath, JSON.stringify(data, null, 2), "utf8");
-}
-
 export function hashValue(input: string) {
   return createHash("sha256").update(input).digest("hex");
 }
 
-export async function listInvites() {
-  const db = await readDb();
-  return db.invites.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+export async function listInvites(): Promise<InviteRecord[]> {
+  const redis = getRedis();
+  const ids = await redis.smembers(INVITES_INDEX);
+  if (!ids.length) return [];
+  const records = await Promise.all(ids.map((id) => redis.get<InviteRecord>(inviteKey(id))));
+  return records
+    .filter((r): r is InviteRecord => r !== null)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 export async function createInvite(input: { email: string; companyName: string; contactName: string }) {
-  const db = await readDb();
+  const redis = getRedis();
   const now = new Date().toISOString();
   const invite: InviteRecord = {
     id: randomUUID(),
@@ -129,26 +115,26 @@ export async function createInvite(input: { email: string; companyName: string; 
     sheetRowSynced: false,
     draft: defaultDraft(),
   };
-  db.invites.push(invite);
-  await writeDb(db);
+  await redis.set(inviteKey(invite.id), invite);
+  await redis.sadd(INVITES_INDEX, invite.id);
   return invite;
 }
 
-export async function getInviteByToken(token: string) {
-  const db = await readDb();
-  return db.invites.find((invite) => invite.token === token) ?? null;
+export async function getInviteByToken(token: string): Promise<InviteRecord | null> {
+  const redis = getRedis();
+  const ids = await redis.smembers(INVITES_INDEX);
+  if (!ids.length) return null;
+  const records = await Promise.all(ids.map((id) => redis.get<InviteRecord>(inviteKey(id))));
+  return records.find((r): r is InviteRecord => r !== null && r.token === token) ?? null;
 }
 
 export async function updateInvite(id: string, updater: (invite: InviteRecord) => InviteRecord) {
-  const db = await readDb();
-  const index = db.invites.findIndex((invite) => invite.id === id);
-  if (index === -1) {
-    return null;
-  }
-  const next = updater(db.invites[index]);
+  const redis = getRedis();
+  const existing = await redis.get<InviteRecord>(inviteKey(id));
+  if (!existing) return null;
+  const next = updater(existing);
   next.updatedAt = new Date().toISOString();
-  db.invites[index] = next;
-  await writeDb(db);
+  await redis.set(inviteKey(id), next);
   return next;
 }
 
@@ -209,26 +195,22 @@ export async function updateInviteDrive(
   }));
 }
 
-export async function persistUpload(file: File, fieldId: string) {
-  await ensureStorage();
+export async function persistUpload(file: File, fieldId: string): Promise<{ item: UploadItem; buffer: Buffer }> {
   const id = randomUUID();
-  const ext = path.extname(file.name);
-  const storedName = `${id}${ext}`;
-  const target = path.join(uploadsRoot, storedName);
   const arrayBuffer = await file.arrayBuffer();
-  await writeFile(target, Buffer.from(arrayBuffer));
+  const buffer = Buffer.from(arrayBuffer);
   const item: UploadItem = {
     id,
     fieldId,
     originalName: file.name,
     mimeType: file.type || "application/octet-stream",
     size: file.size,
-    storedName,
+    storedName: id,
     uploadedAt: new Date().toISOString(),
   };
-  return item;
+  return { item, buffer };
 }
 
-export async function deleteUpload(storedName: string) {
-  await rm(path.join(uploadsRoot, storedName), { force: true });
+export async function deleteUpload(_storedName: string) {
+  // Files are stored in Google Drive only — nothing to delete locally
 }
