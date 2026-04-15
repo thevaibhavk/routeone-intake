@@ -5,6 +5,7 @@ export function getEmptyContact(role = "Primary Contact"): Contact {
   return {
     id: crypto.randomUUID(),
     role,
+    roleOther: "",
     name: "",
     title: "",
     email: "",
@@ -17,7 +18,7 @@ export function computeCompletion(input: {
   contacts: Contact[];
   uploads: Record<string, UploadItem[]>;
 }) {
-  const totalRequired = requiredFieldIds.length + 3;
+  const totalRequired = requiredFieldIds.length + 2;
   let completed = 0;
 
   for (const fieldId of requiredFieldIds) {
@@ -29,7 +30,6 @@ export function computeCompletion(input: {
 
   const primary = input.contacts[0];
   if (primary?.name.trim()) completed += 1;
-  if (primary?.title.trim()) completed += 1;
   if (primary?.email.trim()) completed += 1;
 
   return Math.min(100, Math.round((completed / totalRequired) * 100));
@@ -37,7 +37,10 @@ export function computeCompletion(input: {
 
 export function sanitizeDraftPayload(payload: Partial<Draft>) {
   const values = (payload.values || {}) as Record<string, string | string[]>;
-  const contacts = Array.isArray(payload.contacts) ? payload.contacts : [];
+  const contacts = (Array.isArray(payload.contacts) ? payload.contacts : []).map((c) => ({
+    ...c,
+    roleOther: c.roleOther ?? "",
+  }));
   const uploads = (payload.uploads || {}) as Record<string, UploadItem[]>;
   return {
     values,

@@ -187,6 +187,8 @@ async function getOrCreateClientFolder(
     q: `'${rootFolderId}' in parents and name = '${safeName.replace(/'/g, "\\'")}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
     fields: "files(id, name)",
     spaces: "drive",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   });
 
   if (listRes.data.files && listRes.data.files.length > 0) {
@@ -200,6 +202,7 @@ async function getOrCreateClientFolder(
       parents: [rootFolderId],
     },
     fields: "id",
+    supportsAllDrives: true,
   });
   return createRes.data.id!;
 }
@@ -234,6 +237,7 @@ export async function driveUploadFile({
       body: stream,
     },
     fields: "id, webViewLink",
+    supportsAllDrives: true,
   });
 
   const fileId = uploadRes.data.id!;
@@ -243,6 +247,7 @@ export async function driveUploadFile({
   await drive.permissions.create({
     fileId,
     requestBody: { role: "reader", type: "anyone" },
+    supportsAllDrives: true,
   });
 
   return { fileId, fileLink, folderId, folderLink };

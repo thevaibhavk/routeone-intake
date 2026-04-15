@@ -184,13 +184,22 @@ export function AdminDashboard({
                   <div className="stack" style={{ gap: 6 }}>
                     <strong>{invite.draft?.completion || 0}%</strong>
                     <div className="progress"><span style={{ width: `${invite.draft?.completion || 0}%` }} /></div>
-                    <button
-                      className="btn-copy"
-                      onClick={() => copyLink(invite)}
-                      title="Copy form link"
-                    >
-                      {copiedId === invite.id ? "Copied!" : "Copy link"}
-                    </button>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        className="btn-copy"
+                        onClick={() => copyLink(invite)}
+                        title="Copy form link"
+                      >
+                        {copiedId === invite.id ? "Copied!" : "Copy link"}
+                      </button>
+                      <a
+                        className="btn-copy"
+                        href={`/admin/internal/${invite.id}`}
+                        title="Open internal form"
+                      >
+                        Internal form
+                      </a>
+                    </div>
                   </div>
                 </div>
               )) : <div className="empty-state">No invites match that search.</div>}

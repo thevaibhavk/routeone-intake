@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-import { intakeSections, contactRoleSuggestions, type BaseField } from "@/lib/form-schema";
+import { intakeSections, contactRoleOptions, type BaseField } from "@/lib/form-schema";
 import { computeCompletion } from "@/lib/intake";
 import type { Contact, InviteRecord, UploadItem } from "@/lib/store";
 import { RouteOneLogo } from "@/components/routeone-logo";
@@ -22,7 +22,7 @@ type PublicInvite = Omit<InviteRecord, "otpHash" | "otpExpiresAt" | "draft"> & {
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 function emptyContact(role = "Primary Contact"): Contact {
-  return { id: crypto.randomUUID(), role, name: "", title: "", email: "", phone: "" };
+  return { id: crypto.randomUUID(), role, roleOther: "", name: "", title: "", email: "", phone: "" };
 }
 
 export function IntakeExperience() {
@@ -90,9 +90,14 @@ export function IntakeExperience() {
     startTransition(() => setValues((current) => ({ ...current, [fieldId]: value })));
   }
 
+  useEffect(() => {
+    if (values.jurisdiction === "United States") {
+      updateValue("fiscalYearEnd", "December (12/31)");
+    }
+  }, [values.jurisdiction]);
+
   function addContact() {
-    const role = contactRoleSuggestions[Math.min(contacts.length, contactRoleSuggestions.length - 1)];
-    setContacts((current) => [...current, emptyContact(role)]);
+    setContacts((current) => [...current, emptyContact()]);
   }
 
   async function uploadFile(fieldId: string, fileList: FileList | null) {
@@ -195,11 +200,27 @@ export function IntakeExperience() {
           <div className="topbar-brand">
             <img src="/RouteOne-Logo-dark-theme.svg" alt="Route One" style={{ height: 28, display: "block" }} />
           </div>
-          <div className="topbar-status" data-tone={submitState === "submitted" ? "submitted" : invite?.status || "invited"}>
-            {submitState === "submitted" ? "Submitted" : authenticated ? "Verified Access" : "Secure Intake"}
+          <div className="topbar-right">
+            <div className="topbar-status" data-tone={submitState === "submitted" ? "submitted" : invite?.status || "invited"}>
+              {submitState === "submitted" ? "Submitted" : authenticated ? "Verified Access" : "Secure Intake"}
+            </div>
+            {authenticated && submitState !== "submitted" && (
+              <div className="topbar-progress">
+                <span className="topbar-completion">{completion}%</span>
+                <span className="topbar-autosave">
+                  {saveState === "saving" ? "Saving\u2026" : saveState === "saved" ? "Saved" : saveState === "error" ? "Save failed" : "Autosave on"}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </header>
+
+      {authenticated && submitState !== "submitted" && (
+        <div className="disclaimer-bar">
+          This link is shareable and your progress is persisted — you can return anytime to continue.
+        </div>
+      )}
 
       <section className="intake-hero">
         <div className="hero-inner intake-hero-inner">
@@ -267,7 +288,7 @@ export function IntakeExperience() {
         </section>
       ) : (
         <>
-          <section className="content-section off">
+          <section className="content-section off contacts-section">
             <div className="content-inner intake-topbar-layout">
               <div className="intake-topbar-left">
                 <div className="sidebar-card stack">
@@ -292,21 +313,51 @@ export function IntakeExperience() {
                           {[
                             ["role", "Role"],
                             ["name", "Full Name"],
-                            ["title", "Title / Role"],
                             ["email", "Email"],
                             ["phone", "Phone / WhatsApp"],
                           ].map(([key, label]) => (
                             <div className="field" key={key}>
-                              <label className="label">{label}{index === 0 && ["name", "title", "email"].includes(key) ? <span className="req"> *</span> : null}</label>
-                              <input
-                                className="input"
-                                value={contact[key as keyof Contact] as string}
-                                onChange={(e) =>
-                                  setContacts((current) =>
-                                    current.map((item) => (item.id === contact.id ? { ...item, [key]: e.target.value } : item)),
-                                  )
-                                }
-                              />
+                              <label className="label">{label}{index === 0 && ["name", "email"].includes(key) ? <span className="req"> *</span> : null}</label>
+                              {key === "role" ? (
+                                <>
+                                  <select
+                                    className="select"
+                                    value={contact[key as keyof Contact] as string}
+                                    onChange={(e) =>
+                                      setContacts((current) =>
+                                        current.map((item) => (item.id === contact.id ? { ...item, [key]: e.target.value } : item)),
+                                      )
+                                    }
+                                  >
+                                    <option value="">Select a role</option>
+                                    {contactRoleOptions.map((opt) => (
+                                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                  </select>
+                                  {contact.role === "Other" && (
+                                    <input
+                                      className="input other-specify"
+                                      placeholder="Please specify role"
+                                      value={contact.roleOther}
+                                      onChange={(e) =>
+                                        setContacts((current) =>
+                                          current.map((item) => (item.id === contact.id ? { ...item, roleOther: e.target.value } : item)),
+                                        )
+                                      }
+                                    />
+                                  )}
+                                </>
+                              ) : (
+                                <input
+                                  className="input"
+                                  value={contact[key as keyof Contact] as string}
+                                  onChange={(e) =>
+                                    setContacts((current) =>
+                                      current.map((item) => (item.id === contact.id ? { ...item, [key]: e.target.value } : item)),
+                                    )
+                                  }
+                                />
+                              )}
                             </div>
                           ))}
                         </div>
@@ -340,7 +391,7 @@ export function IntakeExperience() {
             </div>
           </section>
 
-          <section className="content-section off">
+          <section className="content-section off form-sections">
             <div className="content-inner stack-lg">
               {intakeSections.map((section) => (
                 <section id={section.id} key={section.id} className="form-section">
@@ -352,17 +403,28 @@ export function IntakeExperience() {
                     </div>
                   </div>
                   <div className="field-grid">
-                    {section.fields.map((field) => (
-                      <FieldRenderer
-                        key={field.id}
-                        field={field}
-                        value={values[field.id]}
-                        uploads={uploads[field.id] || []}
-                        onChange={(value) => updateValue(field.id, value)}
-                        onUpload={(files) => uploadFile(field.id, files)}
-                        onRemoveUpload={(fileId) => removeFile(field.id, fileId)}
-                      />
-                    ))}
+                    {section.fields
+                      .filter((field) => {
+                        if (!field.visibleWhen) return true;
+                        const depValue = values[field.visibleWhen.fieldId];
+                        if (Array.isArray(field.visibleWhen.value)) {
+                          return field.visibleWhen.value.includes(String(depValue));
+                        }
+                        return depValue === field.visibleWhen.value;
+                      })
+                      .map((field) => (
+                        <FieldRenderer
+                          key={field.id}
+                          field={field}
+                          value={values[field.id]}
+                          otherValue={String(values[field.id + "_other"] || "")}
+                          uploads={uploads[field.id] || []}
+                          onChange={(value) => updateValue(field.id, value)}
+                          onOtherChange={(value) => updateValue(field.id + "_other", value)}
+                          onUpload={(files) => uploadFile(field.id, files)}
+                          onRemoveUpload={(fileId) => removeFile(field.id, fileId)}
+                        />
+                      ))}
                   </div>
                 </section>
               ))}
@@ -388,18 +450,27 @@ export function IntakeExperience() {
 function FieldRenderer({
   field,
   value,
+  otherValue,
   uploads,
   onChange,
+  onOtherChange,
   onUpload,
   onRemoveUpload,
 }: {
   field: BaseField;
   value: string | string[] | undefined;
+  otherValue?: string;
   uploads: UploadItem[];
   onChange: (value: string | string[]) => void;
+  onOtherChange?: (value: string) => void;
   onUpload: (files: FileList | null) => void;
   onRemoveUpload: (fileId: string) => void;
 }) {
+  const showOtherInput = field.hasOtherSpecify && (
+    field.type === "checkbox-group"
+      ? Array.isArray(value) && value.includes("Other")
+      : value === "Other"
+  );
   const isFull = field.type === "textarea" || field.type === "checkbox-group";
   const label = (
     <label className="label">
@@ -411,7 +482,14 @@ function FieldRenderer({
   if (field.type === "textarea") {
     return (
       <div className="field full">
-        {label}
+        <div className="label-row">
+          {label}
+          {field.hasAiAssist && (
+            <button type="button" className="btn-ai" onClick={() => { /* AI fill placeholder */ }}>
+              ✨ AI Fill
+            </button>
+          )}
+        </div>
         <textarea className="textarea" value={String(value || "")} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} />
       </div>
     );
@@ -427,6 +505,9 @@ function FieldRenderer({
             <option key={option.value} value={option.value}>{option.label}</option>
           ))}
         </select>
+        {showOtherInput && (
+          <input className="input other-specify" placeholder="Please specify" value={otherValue || ""} onChange={(e) => onOtherChange?.(e.target.value)} />
+        )}
       </div>
     );
   }
@@ -469,6 +550,9 @@ function FieldRenderer({
             );
           })}
         </div>
+        {showOtherInput && (
+          <input className="input other-specify" placeholder="Please specify" value={otherValue || ""} onChange={(e) => onOtherChange?.(e.target.value)} />
+        )}
       </div>
     );
   }

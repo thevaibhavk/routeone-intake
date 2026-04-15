@@ -4,6 +4,7 @@ import { Redis } from "@upstash/redis";
 export type Contact = {
   id: string;
   role: string;
+  roleOther: string;
   name: string;
   title: string;
   email: string;
@@ -68,6 +69,7 @@ const defaultDraft = (): Draft => ({
     {
       id: randomUUID(),
       role: "Primary Contact",
+      roleOther: "",
       name: "",
       title: "",
       email: "",
@@ -213,4 +215,31 @@ export async function persistUpload(file: File, fieldId: string): Promise<{ item
 
 export async function deleteUpload(_storedName: string) {
   // Files are stored in Google Drive only — nothing to delete locally
+}
+
+export type InternalForm = {
+  values: Record<string, string | string[]>;
+  lastSavedAt: string | null;
+};
+
+function internalKey(inviteId: string) {
+  return `internal:${inviteId}`;
+}
+
+const defaultInternalForm = (): InternalForm => ({
+  values: {},
+  lastSavedAt: null,
+});
+
+export async function getInternalForm(inviteId: string): Promise<InternalForm> {
+  const redis = getRedis();
+  const data = await redis.get<InternalForm>(internalKey(inviteId));
+  return data ?? defaultInternalForm();
+}
+
+export async function saveInternalForm(inviteId: string, values: Record<string, string | string[]>) {
+  const redis = getRedis();
+  const form: InternalForm = { values, lastSavedAt: new Date().toISOString() };
+  await redis.set(internalKey(inviteId), form);
+  return form;
 }

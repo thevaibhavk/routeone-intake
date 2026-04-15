@@ -79,6 +79,13 @@ textarea {
   gap: 14px;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
 .topbar-copy {
   display: grid;
   gap: 2px;
@@ -97,6 +104,38 @@ textarea {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.45);
+}
+
+.topbar-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-completion {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.topbar-autosave {
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.disclaimer-bar {
+  background: var(--green);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  font-weight: 400;
+  text-align: center;
+  padding: 10px 20px;
+  letter-spacing: 0.02em;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .topbar-status {
@@ -247,6 +286,14 @@ textarea {
   max-width: 1280px;
   margin: 0 auto;
   padding: 96px 80px;
+}
+
+.contacts-section .content-inner {
+  padding-bottom: 32px;
+}
+
+.form-sections .content-inner {
+  padding-top: 32px;
 }
 
 .content-inner.single-column {
@@ -477,6 +524,37 @@ textarea {
 
 .req {
   color: var(--green);
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn-ai {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--green);
+  background: var(--green-light);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-ai:hover {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+
+.other-specify {
+  margin-top: 10px;
 }
 
 .input,

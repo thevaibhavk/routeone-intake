@@ -14,6 +14,7 @@ const schema = z.object({
     z.object({
       id: z.string(),
       role: z.string(),
+      roleOther: z.string().optional().default(""),
       name: z.string(),
       title: z.string(),
       email: z.string(),
