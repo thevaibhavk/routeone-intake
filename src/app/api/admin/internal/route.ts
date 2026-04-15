@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getAdminSession } from "@/lib/auth";
-import { getInternalForm, saveInternalForm } from "@/lib/store";
+import { getInternalForm, saveInternalForm, getInviteById } from "@/lib/store";
+import { sheetWriteInternalData } from "@/lib/google";
 
 const getSchema = z.object({ inviteId: z.string().uuid() });
 const postSchema = z.object({
@@ -34,5 +35,16 @@ export async function POST(request: Request) {
 
   const body = postSchema.parse(await request.json());
   const form = await saveInternalForm(body.inviteId, body.values);
+
+  getInviteById(body.inviteId).then((invite) => {
+    if (!invite) return;
+    sheetWriteInternalData({
+      inviteId: invite.id,
+      companyName: invite.companyName,
+      values: body.values,
+      savedAt: form.lastSavedAt ?? new Date().toISOString(),
+    }).catch((err) => console.error("[google] sheetWriteInternalData failed:", err));
+  });
+
   return NextResponse.json({ form });
 }

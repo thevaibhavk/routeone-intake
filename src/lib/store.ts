@@ -122,6 +122,11 @@ export async function createInvite(input: { email: string; companyName: string; 
   return invite;
 }
 
+export async function getInviteById(id: string): Promise<InviteRecord | null> {
+  const redis = getRedis();
+  return redis.get<InviteRecord>(inviteKey(id));
+}
+
 export async function getInviteByToken(token: string): Promise<InviteRecord | null> {
   const redis = getRedis();
   const ids = await redis.smembers(INVITES_INDEX);

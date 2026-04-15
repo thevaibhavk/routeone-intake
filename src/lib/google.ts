@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 import { Readable } from "node:stream";
 import { intakeSections } from "@/lib/form-schema";
+import { internalSections } from "@/lib/internal-schema";
 import type { Draft } from "@/lib/store";
 
 function getAuth() {
@@ -239,6 +240,93 @@ export async function sheetWriteFormData({
     valueInputOption: "RAW",
     requestBody: { values: [rowValues] },
   });
+}
+
+const INTERNAL_FIELDS = internalSections.flatMap((section) =>
+  section.fields.map((f) => ({ id: f.id, label: f.label })),
+);
+
+const INTERNAL_SHEET = "Internal Notes";
+
+const INTERNAL_HEADERS = ["Invite ID", "Company", ...INTERNAL_FIELDS.map((f) => f.label), "Saved At"];
+
+async function ensureInternalSheet(sheets: ReturnType<typeof google.sheets>, sheetId: string) {
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
+  const exists = meta.data.sheets?.some((s) => s.properties?.title === INTERNAL_SHEET);
+  if (!exists) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: { requests: [{ addSheet: { properties: { title: INTERNAL_SHEET } } }] },
+    });
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: `${INTERNAL_SHEET}!A1`,
+      valueInputOption: "RAW",
+      requestBody: { values: [INTERNAL_HEADERS] },
+    });
+  }
+}
+
+async function findInternalRowByInviteId(
+  sheets: ReturnType<typeof google.sheets>,
+  sheetId: string,
+  inviteId: string,
+): Promise<number | null> {
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId,
+    range: `${INTERNAL_SHEET}!A:A`,
+  });
+  const rows = res.data.values ?? [];
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i]?.[0] === inviteId) return i + 1;
+  }
+  return null;
+}
+
+export async function sheetWriteInternalData({
+  inviteId,
+  companyName,
+  values,
+  savedAt,
+}: {
+  inviteId: string;
+  companyName: string;
+  values: Record<string, string | string[]>;
+  savedAt: string;
+}) {
+  if (!isConfigured()) return;
+  const auth = getAuth();
+  if (!auth) return;
+  const sheetId = process.env.GOOGLE_SHEET_ID!;
+  const sheets = google.sheets({ version: "v4", auth });
+
+  await ensureInternalSheet(sheets, sheetId);
+
+  const fieldValues = INTERNAL_FIELDS.map(({ id }) => {
+    const val = values[id];
+    if (Array.isArray(val)) return val.join(", ");
+    return val ?? "";
+  });
+
+  const rowData = [inviteId, companyName, ...fieldValues, savedAt];
+
+  const existingRow = await findInternalRowByInviteId(sheets, sheetId, inviteId);
+  if (existingRow) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: `${INTERNAL_SHEET}!A${existingRow}`,
+      valueInputOption: "RAW",
+      requestBody: { values: [rowData] },
+    });
+  } else {
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: sheetId,
+      range: `${INTERNAL_SHEET}!A1`,
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: [rowData] },
+    });
+  }
 }
 
 // ─── Drive ───────────────────────────────────────────────────────────────────
