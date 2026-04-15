@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     html: `<p>Hi ${invite.contactName},</p><p>Use this secure link to access your Route One intake form:</p><p><a href="${link}">${link}</a></p><p>You will verify access with a one-time code sent to this email address.</p>`,
   });
 
-  sheetAddInviteRow({
+  await sheetAddInviteRow({
     inviteId: invite.id,
     companyName: invite.companyName,
     contactName: invite.contactName,
