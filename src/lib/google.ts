@@ -1,5 +1,7 @@
 import { google } from "googleapis";
 import { Readable } from "node:stream";
+import { intakeSections } from "@/lib/form-schema";
+import type { Draft } from "@/lib/store";
 
 function getAuth() {
   const credentialsJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
@@ -171,6 +173,71 @@ export async function sheetUpdateDriveFolder({
     range: `Sheet1!I${row}`,
     valueInputOption: "RAW",
     requestBody: { values: [[driveFolderLink]] },
+  });
+}
+
+// ─── Form Data ───────────────────────────────────────────────────────────────
+
+const FORM_FIELDS = intakeSections.flatMap((section) =>
+  section.fields.filter((f) => f.type !== "upload").map((f) => ({ id: f.id, label: f.label })),
+);
+
+const FORM_HEADERS = [
+  ...FORM_FIELDS.map((f) => f.label),
+  "Contacts",
+];
+
+async function ensureFormHeaders(sheets: ReturnType<typeof google.sheets>, sheetId: string) {
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId,
+    range: "Sheet1!K1:ZZ1",
+  });
+  const firstRow = res.data.values?.[0] ?? [];
+  if (firstRow[0] !== FORM_FIELDS[0].label) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: "Sheet1!K1",
+      valueInputOption: "RAW",
+      requestBody: { values: [FORM_HEADERS] },
+    });
+  }
+}
+
+export async function sheetWriteFormData({
+  inviteId,
+  draft,
+}: {
+  inviteId: string;
+  draft: Draft;
+}) {
+  if (!isConfigured()) return;
+  const auth = getAuth();
+  if (!auth) return;
+  const sheetId = process.env.GOOGLE_SHEET_ID!;
+  const sheets = google.sheets({ version: "v4", auth });
+
+  await ensureFormHeaders(sheets, sheetId);
+
+  const row = await findRowByInviteId(sheets, sheetId, inviteId);
+  if (!row) return;
+
+  const fieldValues = FORM_FIELDS.map(({ id }) => {
+    const val = draft.values[id];
+    if (Array.isArray(val)) return val.join(", ");
+    return val ?? "";
+  });
+
+  const contactsText = draft.contacts
+    .map((c) => `${c.name} (${c.role}) — ${c.email}${c.phone ? ` | ${c.phone}` : ""}`)
+    .join("\n");
+
+  const rowValues = [...fieldValues, contactsText];
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: sheetId,
+    range: `Sheet1!K${row}`,
+    valueInputOption: "RAW",
+    requestBody: { values: [rowValues] },
   });
 }
 

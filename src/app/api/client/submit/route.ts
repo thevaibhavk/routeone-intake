@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { getClientSession } from "@/lib/auth";
 import { getInviteByToken, markSubmitted } from "@/lib/store";
-import { sheetUpdateStatus } from "@/lib/google";
+import { sheetUpdateStatus, sheetWriteFormData } from "@/lib/google";
 
 const schema = z.object({
   inviteId: z.string().uuid(),
@@ -32,6 +32,13 @@ export async function POST(request: Request) {
       completion: invite.draft?.completion ?? 100,
       submittedAt: invite.submittedAt ?? undefined,
     }).catch((err) => console.error("[google] sheetUpdateStatus failed:", err));
+
+    if (invite.draft) {
+      sheetWriteFormData({
+        inviteId: invite.id,
+        draft: invite.draft,
+      }).catch((err) => console.error("[google] sheetWriteFormData failed:", err));
+    }
   }
 
   return NextResponse.json({ submittedAt: invite?.submittedAt ?? null });
