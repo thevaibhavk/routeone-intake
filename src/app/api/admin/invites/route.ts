@@ -33,6 +33,16 @@ export async function POST(request: Request) {
   }
 
   const body = schema.parse(await request.json());
+
+  const existing = await listInvites();
+  const duplicate = existing.find((i) => i.email.toLowerCase() === body.email.toLowerCase());
+  if (duplicate) {
+    return NextResponse.json(
+      { error: `An invite already exists for ${body.email}` },
+      { status: 409 },
+    );
+  }
+
   const invite = await createInvite(body);
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const link = `${baseUrl}/?invite=${invite.token}`;
