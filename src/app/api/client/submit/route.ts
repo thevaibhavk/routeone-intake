@@ -26,19 +26,20 @@ export async function POST(request: Request) {
   const invite = await markSubmitted(body.inviteId);
 
   if (invite) {
-    sheetUpdateStatus({
-      inviteId: invite.id,
-      status: "submitted",
-      completion: invite.draft?.completion ?? 100,
-      submittedAt: invite.submittedAt ?? undefined,
-    }).catch((err) => console.error("[google] sheetUpdateStatus failed:", err));
-
-    if (invite.draft) {
-      sheetWriteFormData({
+    await Promise.allSettled([
+      sheetUpdateStatus({
         inviteId: invite.id,
-        draft: invite.draft,
-      }).catch((err) => console.error("[google] sheetWriteFormData failed:", err));
-    }
+        status: "submitted",
+        completion: invite.draft?.completion ?? 100,
+        submittedAt: invite.submittedAt ?? undefined,
+      }).catch((err) => console.error("[google] sheetUpdateStatus failed:", err)),
+      invite.draft
+        ? sheetWriteFormData({
+            inviteId: invite.id,
+            draft: invite.draft,
+          }).catch((err) => console.error("[google] sheetWriteFormData failed:", err))
+        : Promise.resolve(),
+    ]);
   }
 
   return NextResponse.json({ submittedAt: invite?.submittedAt ?? null });

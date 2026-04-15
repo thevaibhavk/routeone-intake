@@ -19,6 +19,7 @@ const schema = z.object({
       title: z.string(),
       email: z.string(),
       phone: z.string(),
+      phoneCountryCode: z.string().optional().default("+1"),
     }),
   ),
   uploads: z.record(
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
   const invite = await saveDraft(body.inviteId, nextDraft);
 
   if (invite) {
-    sheetUpdateStatus({
+    await sheetUpdateStatus({
       inviteId: invite.id,
       status: invite.status,
       completion: invite.draft?.completion ?? 0,

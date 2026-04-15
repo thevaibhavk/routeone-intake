@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       upload.driveFileLink = driveResult.fileLink;
       if (!invite.driveFolderId) {
         await updateInviteDrive(invite.id, driveResult.folderId, driveResult.folderLink);
-        sheetUpdateDriveFolder({
+        await sheetUpdateDriveFolder({
           inviteId: invite.id,
           driveFolderLink: driveResult.folderLink,
         }).catch((err) => console.error("[google] sheetUpdateDriveFolder failed:", err));
