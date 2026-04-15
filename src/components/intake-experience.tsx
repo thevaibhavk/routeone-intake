@@ -21,8 +21,47 @@ type PublicInvite = Omit<InviteRecord, "otpHash" | "otpExpiresAt" | "draft"> & {
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
+const COUNTRY_CODES = [
+  { code: "+1",   label: "+1 US/CA" },
+  { code: "+44",  label: "+44 UK" },
+  { code: "+91",  label: "+91 IN" },
+  { code: "+971", label: "+971 AE" },
+  { code: "+65",  label: "+65 SG" },
+  { code: "+61",  label: "+61 AU" },
+  { code: "+64",  label: "+64 NZ" },
+  { code: "+49",  label: "+49 DE" },
+  { code: "+33",  label: "+33 FR" },
+  { code: "+34",  label: "+34 ES" },
+  { code: "+39",  label: "+39 IT" },
+  { code: "+31",  label: "+31 NL" },
+  { code: "+46",  label: "+46 SE" },
+  { code: "+47",  label: "+47 NO" },
+  { code: "+41",  label: "+41 CH" },
+  { code: "+32",  label: "+32 BE" },
+  { code: "+7",   label: "+7 RU" },
+  { code: "+86",  label: "+86 CN" },
+  { code: "+81",  label: "+81 JP" },
+  { code: "+82",  label: "+82 KR" },
+  { code: "+66",  label: "+66 TH" },
+  { code: "+60",  label: "+60 MY" },
+  { code: "+62",  label: "+62 ID" },
+  { code: "+63",  label: "+63 PH" },
+  { code: "+84",  label: "+84 VN" },
+  { code: "+92",  label: "+92 PK" },
+  { code: "+55",  label: "+55 BR" },
+  { code: "+52",  label: "+52 MX" },
+  { code: "+54",  label: "+54 AR" },
+  { code: "+57",  label: "+57 CO" },
+  { code: "+27",  label: "+27 ZA" },
+  { code: "+234", label: "+234 NG" },
+  { code: "+254", label: "+254 KE" },
+  { code: "+20",  label: "+20 EG" },
+];
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function emptyContact(role = "Primary Contact"): Contact {
-  return { id: crypto.randomUUID(), role, roleOther: "", name: "", title: "", email: "", phone: "" };
+  return { id: crypto.randomUUID(), role, roleOther: "", name: "", title: "", email: "", phone: "", phoneCountryCode: "+1" };
 }
 
 export function IntakeExperience() {
@@ -37,6 +76,7 @@ export function IntakeExperience() {
   const [submitState, setSubmitState] = useState<"idle" | "submitting" | "submitted">("idle");
   const [consentGiven, setConsentGiven] = useState(false);
   const [consentDeclined, setConsentDeclined] = useState(false);
+  const [emailErrors, setEmailErrors] = useState<Record<string, string>>({});
   const didHydrate = useRef(false);
 
   useEffect(() => {
@@ -346,6 +386,56 @@ export function IntakeExperience() {
                                       }
                                     />
                                   )}
+                                </>
+                              ) : key === "phone" ? (
+                                <div className="phone-wrap">
+                                  <select
+                                    className="select phone-code"
+                                    value={contact.phoneCountryCode ?? "+1"}
+                                    onChange={(e) =>
+                                      setContacts((current) =>
+                                        current.map((item) => (item.id === contact.id ? { ...item, phoneCountryCode: e.target.value } : item)),
+                                      )
+                                    }
+                                  >
+                                    {COUNTRY_CODES.map((cc) => (
+                                      <option key={cc.code} value={cc.code}>{cc.label}</option>
+                                    ))}
+                                  </select>
+                                  <input
+                                    className="input phone-number"
+                                    type="tel"
+                                    placeholder="Phone number"
+                                    value={contact.phone}
+                                    onChange={(e) =>
+                                      setContacts((current) =>
+                                        current.map((item) => (item.id === contact.id ? { ...item, phone: e.target.value } : item)),
+                                      )
+                                    }
+                                  />
+                                </div>
+                              ) : key === "email" ? (
+                                <>
+                                  <input
+                                    className={clsx("input", emailErrors[contact.id] && "input-error")}
+                                    type="email"
+                                    value={contact.email}
+                                    onChange={(e) => {
+                                      setContacts((current) =>
+                                        current.map((item) => (item.id === contact.id ? { ...item, email: e.target.value } : item)),
+                                      );
+                                      if (emailErrors[contact.id]) setEmailErrors((prev) => { const n = { ...prev }; delete n[contact.id]; return n; });
+                                    }}
+                                    onBlur={(e) => {
+                                      const val = e.target.value.trim();
+                                      if (val && !EMAIL_RE.test(val)) {
+                                        setEmailErrors((prev) => ({ ...prev, [contact.id]: "Invalid email address" }));
+                                      } else {
+                                        setEmailErrors((prev) => { const n = { ...prev }; delete n[contact.id]; return n; });
+                                      }
+                                    }}
+                                  />
+                                  {emailErrors[contact.id] && <span className="field-error">{emailErrors[contact.id]}</span>}
                                 </>
                               ) : (
                                 <input

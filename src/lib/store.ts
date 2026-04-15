@@ -9,6 +9,7 @@ export type Contact = {
   title: string;
   email: string;
   phone: string;
+  phoneCountryCode?: string;
 };
 
 export type UploadItem = {

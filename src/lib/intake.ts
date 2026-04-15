@@ -10,6 +10,7 @@ export function getEmptyContact(role = "Primary Contact"): Contact {
     title: "",
     email: "",
     phone: "",
+    phoneCountryCode: "+1",
   };
 }
 
