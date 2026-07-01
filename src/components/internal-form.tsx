@@ -157,15 +157,17 @@ function FieldRenderer({
         <div className="choices pills">
           {field.options?.map((option) => {
             const active = value === option.value;
+            const inputId = `${field.id}-${option.value}`;
             return (
               <div className="pill" data-active={active} key={option.value}>
                 <input
+                  id={inputId}
                   type="radio"
                   name={field.id}
                   checked={Boolean(active)}
                   onChange={() => onChange(option.value)}
                 />
-                <label>{option.label}</label>
+                <label htmlFor={inputId}>{option.label}</label>
               </div>
             );
           })}
@@ -182,16 +184,18 @@ function FieldRenderer({
         <div className="choices pills">
           {field.options?.map((option) => {
             const active = selected.includes(option.value);
+            const inputId = `${field.id}-${option.value}`;
             return (
               <div className="pill" data-active={active} key={option.value}>
                 <input
+                  id={inputId}
                   type="checkbox"
                   checked={active}
                   onChange={() =>
                     onChange(active ? selected.filter((item) => item !== option.value) : [...selected, option.value])
                   }
                 />
-                <label>{option.label}</label>
+                <label htmlFor={inputId}>{option.label}</label>
               </div>
             );
           })}
