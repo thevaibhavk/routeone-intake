@@ -607,12 +607,15 @@ function FieldRenderer({
       <div className={clsx("field", isFull && "full")}>
         {label}
         <div className="choices pills">
-          {field.options?.map((option) => (
-            <div className="pill" data-active={value === option.value} key={option.value}>
-              <input type="radio" checked={value === option.value} onChange={() => onChange(option.value)} />
-              <label>{option.label}</label>
-            </div>
-          ))}
+          {field.options?.map((option) => {
+            const inputId = `${field.id}-${option.value}`;
+            return (
+              <div className="pill" data-active={value === option.value} key={option.value}>
+                <input id={inputId} type="radio" checked={value === option.value} onChange={() => onChange(option.value)} />
+                <label htmlFor={inputId}>{option.label}</label>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -626,16 +629,18 @@ function FieldRenderer({
         <div className="choices pills">
           {field.options?.map((option) => {
             const active = selected.includes(option.value);
+            const inputId = `${field.id}-${option.value}`;
             return (
               <div className="pill" data-active={active} key={option.value}>
                 <input
+                  id={inputId}
                   type="checkbox"
                   checked={active}
                   onChange={() =>
                     onChange(active ? selected.filter((item) => item !== option.value) : [...selected, option.value])
                   }
                 />
-                <label>{option.label}</label>
+                <label htmlFor={inputId}>{option.label}</label>
               </div>
             );
           })}
